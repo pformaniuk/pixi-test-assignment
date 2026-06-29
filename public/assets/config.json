@@ -1,0 +1,6 @@
+{
+    "floors": 7,
+    "elevatorMaxCapacity": 4,
+    "elevatorSpeed": 1,
+    "elevatorDelayTime": 800
+}
