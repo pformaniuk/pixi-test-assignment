@@ -1,4 +1,4 @@
-import { Elevator, ElevatorStatus, ElevatorView } from "./Elevator";
+import { Elevator, ElevatorCageView, ElevatorStatus, ElevatorShaftView } from "./Elevator";
 import { Floor, FloorView } from "./Floor";
 import config from '../config.json';
 import { Container, Graphics } from 'pixi.js';
@@ -15,7 +15,8 @@ export class House {
 export class HouseView extends Container {
     private bkg: Graphics | undefined;
     private floorsLayer: Container;
-    private elevatorLayer: Container;
+    private elevatorShaftLayer: Container;
+    private elevatorCageLayer: Container;
 
     private totalFloors: number;
     private floorHeight: number;
@@ -31,17 +32,20 @@ export class HouseView extends Container {
         
         this.floorHeight = height / floorsCount;
         this.floorsLayer = new Container();
-        this.elevatorLayer = new Container();
+        this.elevatorShaftLayer = new Container();
+        this.elevatorCageLayer = new Container();
 
         this.initBackground();   
         this.addChild(this.floorsLayer);
-        this.addChild(this.elevatorLayer);
+        this.addChild(this.elevatorShaftLayer);
+        this.addChild(this.elevatorCageLayer);
 
         this.initFloors();   
     }
 
-    public attachElevator(elevator: ElevatorView) {
-        this.elevatorLayer.addChild(elevator);
+    public attachElevator(elevatorShaft: ElevatorShaftView, elevatorCage: ElevatorCageView) {
+        this.elevatorShaftLayer.addChild(elevatorShaft);
+        this.elevatorCageLayer.addChild(elevatorCage);
     }
 
     private initBackground() {
@@ -64,4 +68,7 @@ export class HouseView extends Container {
         }
     }
 
+    get floorHeightValue(): number { 
+        return this.floorHeight;
+    }
 }
