@@ -2,5 +2,7 @@
     "floors": 7,
     "elevatorMaxCapacity": 4,
     "elevatorSpeed": 1,
-    "elevatorDelayTime": 800
+    "elevatorDelayTime": 800,
+    "minPersonGenerationInterval": 4000,
+    "maxPersonGenerationInterval": 10000
 }

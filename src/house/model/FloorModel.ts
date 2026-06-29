@@ -9,4 +9,12 @@ export class FloorModel implements IFloorModel {
   public getPassengers(): PersonModel[] {
     return this.people.filter(person => person.status === PersonStatus.WAITING);
   }
+
+  public addPerson(person: PersonModel) {
+    this.people.push(person);
+  }
+
+  public removePerson(person: PersonModel) {
+    this.people = this.people.filter(p => p !== person);
+  }
 }
