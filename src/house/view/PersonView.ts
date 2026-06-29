@@ -9,8 +9,10 @@ export class PersonView extends Container {
     }
 
     private initBackground() {
+        const borderColor = this.person.souseceFloor > this.person.destinationFloor ? '53dda5' : '2b56cf';
         const background = new Graphics()
             .rect(0, 0, 30, 30)
+            .stroke({ color: borderColor, width: 4 })
             .fill({ color: 0xFFFFFF });
         this.addChild(background);
 

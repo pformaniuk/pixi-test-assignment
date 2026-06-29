@@ -5,6 +5,7 @@ import { ElevatorShaftView } from "./view/ElevatorShaftView";
 import { ElevatorCageView } from "./view/ElevatorCageView";
 import * as TWEEN from "@tweenjs/tween.js";
 import { ElevatorDirection } from './model/ElevatorStatus';
+import { eventBus, HouseEvents } from './model/EventEmitter';
 
 export class ElevatorController {
     private ELEVATOR_SHAFT_WIDTH: number = 100;
@@ -38,7 +39,6 @@ export class ElevatorController {
             nextFloor = this.elevatorModel.currentFloor - 1;
         }
 
-        console.log('nextFloor', nextFloor);
         this.moveElevatorToFloor(nextFloor);
     }
 
@@ -47,7 +47,10 @@ export class ElevatorController {
         new TWEEN.Tween(this.elevatorCageView.position, true).to({ y }, config.elevatorSpeed * 1000)
         .onComplete(async () => {
             this.elevatorModel.currentFloor = floor;
+            eventBus.emit(HouseEvents.ELEVATOR_ARRIVED, floor, this.direction, this.elevatorModel.passengers);
+
             await new Promise(resolve => setTimeout(resolve, config.elevatorDelayTime));
+
             this.moveElevatorToNextFloor();
         })
         .start();

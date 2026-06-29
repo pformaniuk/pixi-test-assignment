@@ -10,7 +10,7 @@ export class FloorView extends Container {
   private drawFloor() {
     const floor = new Graphics()
       .rect(0, 0, this.floorWidth, this.floourHeight)
-      .fill({ color: 0x004000 })
+      .fill({ color: 0xffffff })
       .stroke({ color: 0x000000, width: 1 });
     this.addChild(floor);
 
