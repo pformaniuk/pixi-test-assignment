@@ -1,5 +1,5 @@
 import { IPerson, PersonStatus } from "./Person";
-import PIXI from 'pixi.js';
+import * as PIXI from 'pixi.js';
 
 interface IFloor {
   floorNumber: number;
@@ -14,4 +14,17 @@ export class Floor implements IFloor {
   }
 }
 
-export class FloorView extends PIXI.Container {}
+export class FloorView extends PIXI.Container {
+  constructor(public floorNumber: number, public floorWidth: number, public floourHeight: number) {
+    super();
+    this.drawFloor();
+  }
+
+  private drawFloor() {
+    const floor = new PIXI.Graphics()
+      .rect(0, 0, this.floorWidth, this.floourHeight)
+      .fill({ color: 0x004000 })
+      .stroke({ color: 0x000000, width: 1 })
+    this.addChild(floor);
+  }
+}

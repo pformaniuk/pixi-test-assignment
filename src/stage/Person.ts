@@ -1,4 +1,4 @@
-import PIXI from 'pixi.js';
+import { Container } from 'pixi.js';
 
 export enum PersonStatus {
   MOVING_TO_ELEVATOR = 'moving_to_elevator',
@@ -20,4 +20,4 @@ export class Person implements IPerson {
   }
 }
 
-export class PersonView extends PIXI.Container {}
+export class PersonView extends Container {}

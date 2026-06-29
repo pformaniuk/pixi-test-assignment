@@ -1,5 +1,5 @@
 import { IPerson } from "./Person";
-import PIXI from 'pixi.js';
+import * as PIXI from 'pixi.js';
 
 export enum ElevatorStatus {
   MOVING = 'moving',
@@ -27,4 +27,16 @@ export class Elevator  implements IElevator{
   }
 }
 
-export class ElevatorView extends PIXI.Container {}
+export class ElevatorView extends PIXI.Container {
+  constructor(public elevator: Elevator) {
+    super();
+    this.initBackground();
+  }
+
+ private initBackground () {
+    const background = new PIXI.Graphics()
+      .rect(0, 0, 100, 100)
+      .fill({ color: 0xFF0000 });
+    this.addChild(background);
+  }
+}

@@ -1,4 +1,5 @@
 import { Application, Assets, Sprite } from "pixi.js";
+import { HouseController } from "./stage/HouseController";
 
 (async () => {
   // Create a new application
@@ -24,6 +25,8 @@ import { Application, Assets, Sprite } from "pixi.js";
 
   // Add the bunny to the stage
   app.stage.addChild(bunny);
+
+  const houseController = new HouseController(app.stage);
 
   // Listen for animate update
   app.ticker.add((time) => {
