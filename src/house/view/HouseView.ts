@@ -3,7 +3,6 @@ import { ElevatorShaftView } from "./ElevatorShaftView";
 import { ElevatorCageView } from "./ElevatorCageView";
 import { FloorView } from "./FloorView";
 
-
 export class HouseView extends Container {
     private bkg: Graphics | undefined;
     private floorsLayer: Container;
@@ -31,13 +30,15 @@ export class HouseView extends Container {
         this.addChild(this.floorsLayer);
         this.addChild(this.elevatorShaftLayer);
         this.addChild(this.elevatorCageLayer);
-
-        this.initFloors();
     }
 
     public attachElevator(elevatorShaft: ElevatorShaftView, elevatorCage: ElevatorCageView) {
         this.elevatorShaftLayer.addChild(elevatorShaft);
         this.elevatorCageLayer.addChild(elevatorCage);
+    }
+
+    public addFloor(floor: FloorView) {
+        this.floorsLayer.addChild(floor);
     }
 
     private initBackground() {
@@ -47,20 +48,15 @@ export class HouseView extends Container {
         this.addChild(this.bkg);
     }
 
-    private initFloors() {
-        for (let i = 0; i < this.totalFloors; i++) {
-            const floorNumber = i + 1;
-
-            const yPosition = this.buildingHeight - (floorNumber * this.floorHeight);
-
-            const floorView = new FloorView(floorNumber, this.buildingWidth, this.floorHeight);
-            floorView.y = yPosition;
-
-            this.floorsLayer.addChild(floorView);
-        }
-    }
-
     get floorHeightValue(): number {
         return this.floorHeight;
+    }
+
+    get buildingWidthValue(): number {
+        return this.buildingWidth;
+    }
+
+    get buildingHeightValue(): number {
+        return this.buildingHeight;
     }
 }
