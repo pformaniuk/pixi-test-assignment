@@ -1,5 +1,5 @@
 import { Application, Assets, Sprite } from "pixi.js";
-import { HouseController } from "./stage/HouseController";
+import { HouseController } from "./house/HouseController";
 
 (async () => {
   // Create a new application
