@@ -1,9 +1,9 @@
 import { Container, Graphics } from "pixi.js";
-import { Elevator } from "./Elevator";
+import { ElevatorModel } from "../model/ElevatorModel";
 
 
 export class ElevatorCageView extends Container {
-  constructor(public elevator: Elevator, public elevatorCageWidth: number, public elevatorCageHeight: number) {
+  constructor(public elevator: ElevatorModel, public elevatorCageWidth: number, public elevatorCageHeight: number) {
     super();
     this.initBackground();
   }

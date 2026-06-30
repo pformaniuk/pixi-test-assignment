@@ -6,6 +6,7 @@ import { ElevatorCageView } from "./view/ElevatorCageView";
 import * as TWEEN from "@tweenjs/tween.js";
 import { ElevatorDirection } from './model/ElevatorStatus';
 import { eventBus, HouseEvents } from './model/EventEmitter';
+import { PersonModel } from './model/PersonModel';
 
 export class ElevatorController {
     private ELEVATOR_SHAFT_WIDTH: number = 100;
@@ -23,13 +24,14 @@ export class ElevatorController {
 
         this.house.attachElevator(this.elevatorShaftView, this.elevatorCageView );
         this.moveElevatorToNextFloor();
+        eventBus.on(HouseEvents.LOAD_PASSENGERS, this.onLoadPassengers.bind(this));
     }
 
     private moveElevatorToNextFloor() {
         let nextFloor: number;
-        if (this.elevatorModel.currentFloor === config.floors) {
+        if (this.elevatorModel.currentFloor === config.floors - 1) {
             this.direction = ElevatorDirection.DOWN;
-        } else if (this.elevatorModel.currentFloor === 1) {
+        } else if (this.elevatorModel.currentFloor === 0) {
             this.direction = ElevatorDirection.UP;
         }
 
@@ -43,7 +45,7 @@ export class ElevatorController {
     }
 
     private moveElevatorToFloor(floor: number) {
-        const y = this.house.buildingHeightValue - (floor * this.house.floorHeightValue);
+        const y = this.house.buildingHeightValue - (floor * this.house.floorHeightValue) - this.elevatorCageView.height;
         new TWEEN.Tween(this.elevatorCageView.position, true).to({ y }, config.elevatorSpeed * 1000)
         .onComplete(async () => {
             this.elevatorModel.currentFloor = floor;
@@ -54,5 +56,9 @@ export class ElevatorController {
             this.moveElevatorToNextFloor();
         })
         .start();
+    }
+
+    private onLoadPassengers(passengers: PersonModel[]) {
+        this.elevatorModel.passengers.push(...passengers);
     }
 }   

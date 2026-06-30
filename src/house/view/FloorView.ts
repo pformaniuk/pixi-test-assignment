@@ -15,7 +15,7 @@ export class FloorView extends Container {
     this.addChild(floor);
 
 
-    const text = new Text(`Floor ${this.floorNumber}`, {
+    const text = new Text(`Floor ${this.floorNumber + 1}`, {
       fontSize: 14,
       fill: 0x888888,
       fontFamily: 'Arial'

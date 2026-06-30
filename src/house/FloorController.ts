@@ -29,30 +29,25 @@ export class FloorController {
     }
 
     private onElevatorArrived(floor: number, direction: ElevatorDirection, passengers: PersonModel[], ) {
-        // console.log('Elevator arrived at floor', floor);
-        // console.log('Direction', direction);
-        // console.log('Passengers', passengers);
-
-        // 1. find all people on the floor
+        // 1. find all people on the floor + 
         // 2. move their models to the elevator
         // 3. remove them from the floor
         // 4. add them to the elevator view
 
-        this.grabEligiblePassengers(floor, direction, config.elevatorMaxCapacity - passengers.length);
+        const eligiblePassengers = this.grabEligiblePassengers(floor, direction, config.elevatorMaxCapacity - passengers.length);
+        eventBus.emit(HouseEvents.LOAD_PASSENGERS, eligiblePassengers);
+        // console.log('Passengers', passengers);
+        // console.log('Eligible passengers', eligiblePassengers);
     }
 
     private initFloors() {
-        for (let i = 1; i <= this.totalFloors; i++) {
-            const floorNumber = i;
-    
-            const floorView = new FloorView(floorNumber, this.buildingWidth, this.floorHeight);
-            floorView.y = this.buildingHeight - (floorNumber * this.floorHeight);;
+        for (let i = 0; i < this.totalFloors; i++) {
+            const floorView = new FloorView(i, this.buildingWidth, this.floorHeight);
+            floorView.y = this.buildingHeight - ((i + 1) * this.floorHeight);;
             this.house.addFloor(floorView);
             this.floorsViews.push(floorView);
-
-
-            // ODO Floor number is 1-indexed, but the model is 0-indexed
-            const floorModel = new FloorModel(floorNumber - 1);
+            
+            const floorModel = new FloorModel(i);
             this.floors.push(floorModel);
         }
     }
@@ -61,7 +56,7 @@ export class FloorController {
         const randomCurrentFloor = Math.floor(Math.random() * this.floors.length);
         const randomDestinationFloor = this.getRandomDestinationFloor(randomCurrentFloor, this.totalFloors);
         const floor = this.floors[randomCurrentFloor];
-        const personModel = new PersonModel(randomCurrentFloor, randomDestinationFloor);       
+        const personModel = new PersonModel(randomCurrentFloor, randomDestinationFloor);   
         const personView = this.addPersonToSpawnPoint(floor, personModel);
         this.movePersonToElevator(personView, personModel);
         setTimeout(() => {
@@ -70,9 +65,9 @@ export class FloorController {
     }
 
     private getRandomDestinationFloor(currentFloor: number, totalFloors: number) {
-        let destinationFloor = Math.floor(Math.random() * totalFloors) + 1;
+        let destinationFloor = Math.floor(Math.random() * totalFloors);
         while (destinationFloor === currentFloor) {
-            destinationFloor = Math.floor(Math.random() * totalFloors) + 1;
+            destinationFloor = Math.floor(Math.random() * totalFloors);
         }
 
         console.log('Destination floor', destinationFloor);
@@ -106,8 +101,8 @@ export class FloorController {
         const withRighDirection = waitingPassengers.filter(person => {
             return (direction === ElevatorDirection.UP && person.destinationFloor > floor) ||
                    (direction === ElevatorDirection.DOWN && person.destinationFloor < floor) ||
-                   floor === 1 ||
-                   floor === this.totalFloors;
+                   floor === 0 ||
+                   floor === this.totalFloors - 1;
         });
 
         const withRightCapacity = withRighDirection.slice(0, capacity);

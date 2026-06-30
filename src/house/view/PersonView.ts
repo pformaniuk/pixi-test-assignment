@@ -16,7 +16,7 @@ export class PersonView extends Container {
             .fill({ color: 0xFFFFFF });
         this.addChild(background);
 
-        const text = new Text(this.person.destinationFloor.toString(), {
+        const text = new Text((this.person.destinationFloor + 1).toString(), {
             fontSize: 14,
             fill: 0x000000,
             fontFamily: 'Arial'
