@@ -9,7 +9,6 @@ export class HouseView extends Container {
   private elevatorShaftLayer: Container;
   private elevatorCageLayer: Container;
 
-  private totalFloors: number;
   private floorHeight: number;
   private buildingWidth: number;
   private buildingHeight: number;
@@ -17,7 +16,6 @@ export class HouseView extends Container {
   constructor(floorsCount: number, width: number = 800, height: number = 600) {
     super();
 
-    this.totalFloors = floorsCount;
     this.buildingWidth = width;
     this.buildingHeight = height;
 
