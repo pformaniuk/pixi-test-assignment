@@ -7,6 +7,7 @@ import * as TWEEN from "@tweenjs/tween.js";
 import { ElevatorDirection } from './model/ElevatorStatus';
 import { eventBus, HouseEvents } from './model/EventEmitter';
 import { PersonModel } from './model/PersonModel';
+import { PersonView } from './view/PersonView';
 
 export class ElevatorController {
     private ELEVATOR_SHAFT_WIDTH: number = 100;
@@ -60,7 +61,10 @@ export class ElevatorController {
     }
 
     private onLoadPassengers(passengers: PersonModel[]) {
+        if (passengers.length === 0)
+            return;
         this.elevatorModel.passengers.push(...passengers);
+        this.elevatorCageView.addChild(...passengers.map(p => new PersonView(p)));
     }
 
     private onUnloadPassengers(passengers: PersonModel[], floor: number, direction: ElevatorDirection) {
@@ -68,6 +72,9 @@ export class ElevatorController {
         this.elevatorModel.passengers = this.elevatorModel.passengers.filter(
             p => !idsToRemove.has(p.id)
         );
+        
+        const viewsToRemove = this.elevatorCageView.children.filter(c => c instanceof PersonView && passengers.some(p => p.id === c.person.id));
+        viewsToRemove.forEach(v => this.elevatorCageView.removeChild(v as PersonView));
         eventBus.emit(HouseEvents.PASSENGER_UNLOADED, floor, direction, this.elevatorModel.passengers);
     }
 }   
