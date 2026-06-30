@@ -26,18 +26,22 @@ export class FloorController {
         this.initFloors();
         this.generatePerson();
         eventBus.on(HouseEvents.ELEVATOR_ARRIVED, this.onElevatorArrived.bind(this));
+        eventBus.on(HouseEvents.PASSENGER_UNLOADED, this.onPassengerUnloaded.bind(this));
     }
 
-    private onElevatorArrived(floor: number, direction: ElevatorDirection, passengers: PersonModel[], ) {
-        // 1. find all people on the floor + 
-        // 2. move their models to the elevator
-        // 3. remove them from the floor
-        // 4. add them to the elevator view
+    private onElevatorArrived(floor: number, direction: ElevatorDirection, passengersOfeElevator: PersonModel[]) {
+        console.log(passengersOfeElevator.map(p => p.destinationFloor + 1));
+        const unloadedPassengers = this.unloadPassengers(floor, passengersOfeElevator);
+        eventBus.emit(HouseEvents.UNLOAD_PASSENGERS, unloadedPassengers, floor, direction);
+    }
 
-        const eligiblePassengers = this.grabEligiblePassengers(floor, direction, config.elevatorMaxCapacity - passengers.length);
+    private onPassengerUnloaded(floor: number, direction: ElevatorDirection, passengers: PersonModel[]) {
+        const eligiblePassengers = this.grabEligiblePassengers(
+            floor,
+            direction,
+            config.elevatorMaxCapacity - passengers.length
+        );
         eventBus.emit(HouseEvents.LOAD_PASSENGERS, eligiblePassengers);
-        // console.log('Passengers', passengers);
-        // console.log('Eligible passengers', eligiblePassengers);
     }
 
     private initFloors() {
@@ -70,8 +74,6 @@ export class FloorController {
             destinationFloor = Math.floor(Math.random() * totalFloors);
         }
 
-        console.log('Destination floor', destinationFloor);
-        console.log('Current floor', currentFloor);
         return destinationFloor;
     }
     
@@ -93,6 +95,18 @@ export class FloorController {
         .start();
     }
 
+    private unloadPassengers(floor: number, passengers: PersonModel[]): PersonModel[] {
+        const toUnload = passengers.filter(person => person.destinationFloor === floor);
+        const floorModel = this.floors.find(f => f.floorNumber === floor);
+
+        toUnload.forEach(person => {
+            person.status = PersonStatus.MOVING_AWAY_FROM_ELEVATOR;;
+            floorModel?.addPerson(person);
+        });
+
+        return toUnload;
+    }
+
     private grabEligiblePassengers(floor: number, direction: ElevatorDirection, capacity: number) {
         const floorModel = this.floors.find(f => f.floorNumber === floor);
         const waitingPassengers = floorModel?.getPassengers();
@@ -109,7 +123,7 @@ export class FloorController {
 
         withRightCapacity.forEach(person => {
             person.status = PersonStatus.IN_ELEVATOR;
-            this.floors.find(f => f.floorNumber === person.destinationFloor)?.removePerson(person);
+            floorModel?.removePerson(person);
         });
 
         return withRightCapacity;

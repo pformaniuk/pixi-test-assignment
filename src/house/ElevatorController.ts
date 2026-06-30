@@ -25,6 +25,7 @@ export class ElevatorController {
         this.house.attachElevator(this.elevatorShaftView, this.elevatorCageView );
         this.moveElevatorToNextFloor();
         eventBus.on(HouseEvents.LOAD_PASSENGERS, this.onLoadPassengers.bind(this));
+        eventBus.on(HouseEvents.UNLOAD_PASSENGERS, this.onUnloadPassengers.bind(this));
     }
 
     private moveElevatorToNextFloor() {
@@ -60,5 +61,13 @@ export class ElevatorController {
 
     private onLoadPassengers(passengers: PersonModel[]) {
         this.elevatorModel.passengers.push(...passengers);
+    }
+
+    private onUnloadPassengers(passengers: PersonModel[], floor: number, direction: ElevatorDirection) {
+        const idsToRemove = new Set(passengers.map(p => p.id));
+        this.elevatorModel.passengers = this.elevatorModel.passengers.filter(
+            p => !idsToRemove.has(p.id)
+        );
+        eventBus.emit(HouseEvents.PASSENGER_UNLOADED, floor, direction, this.elevatorModel.passengers);
     }
 }   
