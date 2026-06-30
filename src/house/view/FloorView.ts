@@ -1,4 +1,5 @@
 import { Container, Graphics, Text } from "pixi.js";
+import { PersonView } from "./PersonView";
 
 export class FloorView extends Container {
   constructor(public floorNumber: number, public floorWidth: number, public floourHeight: number) {
@@ -26,5 +27,13 @@ export class FloorView extends Container {
   public addPassenger(passenger: Container) {
     this.addChild(passenger);
     passenger.position.set(135, 0);
+  }
+
+  public regroupPassengers() {
+    const passengers = this.children.filter(c => c instanceof PersonView);
+    const offset = PersonView.SIZE + 10;
+    passengers.forEach((p, index) => {
+      p.position.set(135 + (offset * index), 0);
+    });
   }
 }

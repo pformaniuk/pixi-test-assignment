@@ -92,6 +92,7 @@ export class FloorController {
         new TWEEN.Tween(personView.position, true).to({ x: 135 }, 10000)
         .onComplete(() => {
             personModel.status = PersonStatus.WAITING;
+            this.floorsViews.find(f => f.floorNumber === personModel.souseceFloor)?.regroupPassengers();
         })
         .start();
     }
