@@ -7,7 +7,9 @@ export class FloorModel implements IFloorModel {
   constructor(public floorNumber: number) {}
 
   public getPassengers(): PersonModel[] {
-    return this.people.filter(person => person.status === PersonStatus.WAITING);
+    return this.people.filter(
+      (person) => person.status === PersonStatus.WAITING,
+    );
   }
 
   public addPerson(person: PersonModel) {
@@ -15,6 +17,6 @@ export class FloorModel implements IFloorModel {
   }
 
   public removePerson(person: PersonModel) {
-    this.people = this.people.filter(p => p !== person);
+    this.people = this.people.filter((p) => p !== person);
   }
 }

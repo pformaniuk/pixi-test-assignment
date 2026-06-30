@@ -1,8 +1,10 @@
 import { Container, Graphics } from "pixi.js";
 
-
 export class ElevatorShaftView extends Container {
-  constructor(public shaftWidth: number, public shaftHeight: number) {
+  constructor(
+    public shaftWidth: number,
+    public shaftHeight: number,
+  ) {
     super();
     this.initBackground();
   }

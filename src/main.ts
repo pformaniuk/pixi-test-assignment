@@ -9,7 +9,7 @@ import * as TWEEN from "@tweenjs/tween.js";
   await app.init({ background: "#1099bb", resizeTo: window });
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 
-  const houseController = new HouseController(app.stage);
+  new HouseController(app.stage);
 
   // Listen for animate update
   app.ticker.add((ticker) => {

@@ -1,11 +1,9 @@
-
 export enum ElevatorStatus {
-  MOVING = 'moving',
-  STOPPED = 'stopped'
+  MOVING = "moving",
+  STOPPED = "stopped",
 }
 
-
 export enum ElevatorDirection {
-  UP = 'up',
-  DOWN = 'down'
+  UP = "up",
+  DOWN = "down",
 }

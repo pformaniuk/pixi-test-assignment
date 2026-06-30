@@ -2,9 +2,12 @@ import { Container, Graphics } from "pixi.js";
 import { ElevatorModel } from "../model/ElevatorModel";
 import { PersonView } from "./PersonView";
 
-
 export class ElevatorCageView extends Container {
-  constructor(public elevator: ElevatorModel, public elevatorCageWidth: number, public elevatorCageHeight: number) {
+  constructor(
+    public elevator: ElevatorModel,
+    public elevatorCageWidth: number,
+    public elevatorCageHeight: number,
+  ) {
     super();
     this.initBackground();
   }
@@ -12,7 +15,7 @@ export class ElevatorCageView extends Container {
   private initBackground() {
     const background = new Graphics()
       .rect(0, 0, this.elevatorCageWidth, this.elevatorCageHeight)
-      .fill({ color: 0xFFFFFF });
+      .fill({ color: 0xffffff });
     this.addChild(background);
   }
 
@@ -24,11 +27,11 @@ export class ElevatorCageView extends Container {
   public removePassenger(passenger: PersonView) {
     this.removeChild(passenger);
     this.layoutPassengers();
-  } 
+  }
 
   layoutPassengers() {
     const passengerViews = this.children.filter(
-      (child): child is PersonView => child instanceof PersonView
+      (child): child is PersonView => child instanceof PersonView,
     );
     const count = passengerViews.length;
     if (count === 0) return;
@@ -38,15 +41,16 @@ export class ElevatorCageView extends Container {
     const availableWidth = this.elevatorCageWidth - padding * 2;
     const scale = Math.min(1, availableWidth / (count * personSize));
     const scaledSize = personSize * scale;
-    const gap = count > 1
-      ? Math.max(2, (availableWidth - count * scaledSize) / (count - 1))
-      : 0;
+    const gap =
+      count > 1
+        ? Math.max(2, (availableWidth - count * scaledSize) / (count - 1))
+        : 0;
     const totalWidth = count * scaledSize + (count - 1) * gap;
 
     let x = (this.elevatorCageWidth - totalWidth) / 2;
     const y = (this.elevatorCageHeight - scaledSize) / 2;
 
-    passengerViews.forEach(view => {
+    passengerViews.forEach((view) => {
       view.scale.set(scale);
       view.position.set(x, y);
       x += scaledSize + gap;

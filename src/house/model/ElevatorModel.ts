@@ -8,7 +8,11 @@ export class ElevatorModel implements IElevatorModel {
   public status: ElevatorStatus;
   public passengers: PersonModel[];
 
-  constructor(public maxCapacity: number, public speed: number, public dellayTime: number) {
+  constructor(
+    public maxCapacity: number,
+    public speed: number,
+    public dellayTime: number,
+  ) {
     this.currentFloor = 1;
     this.destinationFloor = 1;
     this.status = ElevatorStatus.STOPPED;
