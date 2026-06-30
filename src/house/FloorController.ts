@@ -126,6 +126,19 @@ export class FloorController {
             floorModel?.removePerson(person);
         });
 
+        this.removePassengersFromFloorView(floor, withRightCapacity);
+
         return withRightCapacity;
+    }
+
+    removePassengersFromFloorView(floor: number, passengers: PersonModel[]) { 
+        const floorView = this.floorsViews.find(f => f.floorNumber === floor);
+        passengers.forEach(person => {
+            const personView = floorView?.children.find(p => p instanceof PersonView && p.person.id === person.id);
+            console.log(personView);
+            if (personView) {
+                floorView?.removeChild(personView);
+            }
+        });
     }
 }
