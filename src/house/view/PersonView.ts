@@ -3,6 +3,8 @@ import { PersonModel } from '../model/PersonModel';
 
 
 export class PersonView extends Container { 
+    static readonly SIZE = 30;
+
     constructor(public person: PersonModel) {
         super();
         this.initBackground();
@@ -11,7 +13,7 @@ export class PersonView extends Container {
     private initBackground() {
         const borderColor = this.person.souseceFloor > this.person.destinationFloor ? '53dda5' : '2b56cf';
         const background = new Graphics()
-            .rect(0, 0, 30, 30)
+            .rect(0, 0, PersonView.SIZE, PersonView.SIZE)
             .stroke({ color: borderColor, width: 4 })
             .fill({ color: 0xFFFFFF });
         this.addChild(background);

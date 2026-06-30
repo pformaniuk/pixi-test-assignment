@@ -64,7 +64,7 @@ export class ElevatorController {
         if (passengers.length === 0)
             return;
         this.elevatorModel.passengers.push(...passengers);
-        this.elevatorCageView.addChild(...passengers.map(p => new PersonView(p)));
+        this.elevatorCageView.addPassenger(...passengers.map(p => new PersonView(p)));
     }
 
     private onUnloadPassengers(passengers: PersonModel[], floor: number, direction: ElevatorDirection) {
@@ -74,7 +74,7 @@ export class ElevatorController {
         );
         
         const viewsToRemove = this.elevatorCageView.children.filter(c => c instanceof PersonView && passengers.some(p => p.id === c.person.id));
-        viewsToRemove.forEach(v => this.elevatorCageView.removeChild(v as PersonView));
+        viewsToRemove.forEach(v => this.elevatorCageView.removePassenger(v as PersonView));
         eventBus.emit(HouseEvents.PASSENGER_UNLOADED, floor, direction, this.elevatorModel.passengers);
     }
 }   
