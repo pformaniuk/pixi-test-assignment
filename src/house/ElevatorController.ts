@@ -8,6 +8,7 @@ import { ElevatorDirection } from './model/ElevatorStatus';
 import { eventBus, HouseEvents } from './model/EventEmitter';
 import { PersonModel } from './model/PersonModel';
 import { PersonView } from './view/PersonView';
+import { StopRequest } from './model/StopRequest';
 
 export class ElevatorController {
     private ELEVATOR_SHAFT_WIDTH: number = 100;
@@ -16,6 +17,7 @@ export class ElevatorController {
     private elevatorShaftView: ElevatorShaftView;
     private elevatorModel: ElevatorModel;
     private direction: ElevatorDirection = ElevatorDirection.UP;
+    private stopRequests: StopRequest[] = [];
     
     constructor(private house: HouseView) {
         this.elevatorModel = new ElevatorModel(config.elevatorMaxCapacity, config.elevatorSpeed, config.elevatorDelayTime);
@@ -27,6 +29,7 @@ export class ElevatorController {
         this.moveElevatorToNextFloor();
         eventBus.on(HouseEvents.LOAD_PASSENGERS, this.onLoadPassengers.bind(this));
         eventBus.on(HouseEvents.UNLOAD_PASSENGERS, this.onUnloadPassengers.bind(this));
+        eventBus.on(HouseEvents.PERSON_REACHED_ELEVATOR, this.onPersonReachedElevator.bind(this));  
     }
 
     private moveElevatorToNextFloor() {
@@ -51,9 +54,10 @@ export class ElevatorController {
         new TWEEN.Tween(this.elevatorCageView.position, true).to({ y }, config.elevatorSpeed * 1000)
         .onComplete(async () => {
             this.elevatorModel.currentFloor = floor;
-            eventBus.emit(HouseEvents.ELEVATOR_ARRIVED, floor, this.direction, this.elevatorModel.passengers);
-
-            await new Promise(resolve => setTimeout(resolve, config.elevatorDelayTime));
+            if (this.shouldStopAtFloor(floor, this.direction)) {
+                eventBus.emit(HouseEvents.ELEVATOR_ARRIVED, floor, this.direction, this.elevatorModel.passengers);
+                await new Promise(resolve => setTimeout(resolve, config.elevatorDelayTime));
+            }
 
             this.moveElevatorToNextFloor();
         })
@@ -65,6 +69,7 @@ export class ElevatorController {
             return;
         this.elevatorModel.passengers.push(...passengers);
         this.elevatorCageView.addPassenger(...passengers.map(p => new PersonView(p)));
+        this.stopRequests = this.stopRequests.filter(r => !passengers.some(p => p.id === r.passengerId));
     }
 
     private onUnloadPassengers(passengers: PersonModel[], floor: number, direction: ElevatorDirection) {
@@ -76,5 +81,15 @@ export class ElevatorController {
         const viewsToRemove = this.elevatorCageView.children.filter(c => c instanceof PersonView && passengers.some(p => p.id === c.person.id));
         viewsToRemove.forEach(v => this.elevatorCageView.removePassenger(v as PersonView));
         eventBus.emit(HouseEvents.PASSENGER_UNLOADED, floor, direction, this.elevatorModel.passengers);
+    }
+
+    private onPersonReachedElevator(request: StopRequest) {
+       this.stopRequests.push(request);
+    }
+
+    private shouldStopAtFloor(floor: number, direction: ElevatorDirection) {
+        return this.stopRequests.some(
+            r => r.floor === floor && (r.direction === direction || floor === 0 || floor === config.floors - 1)) 
+            || this.elevatorModel.passengers.some(p => p.destinationFloor === floor);
     }
 }   

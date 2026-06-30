@@ -8,6 +8,7 @@ import * as TWEEN from "@tweenjs/tween.js";
 import { eventBus, HouseEvents } from "./model/EventEmitter";
 import { PersonStatus } from "./model/PersonStatus";
 import { ElevatorDirection } from "./model/ElevatorStatus";
+import { StopRequest } from "./model/StopRequest";
 
 export class FloorController {
     totalFloors: number;
@@ -30,7 +31,6 @@ export class FloorController {
     }
 
     private onElevatorArrived(floor: number, direction: ElevatorDirection, passengersOfeElevator: PersonModel[]) {
-        console.log(passengersOfeElevator.map(p => p.destinationFloor + 1));
         const unloadedPassengers = this.unloadPassengers(floor, passengersOfeElevator);
         this.addPassengersToDestinationFloorView(floor, unloadedPassengers);
         eventBus.emit(HouseEvents.UNLOAD_PASSENGERS, unloadedPassengers, floor, direction);
@@ -93,6 +93,9 @@ export class FloorController {
         .onComplete(() => {
             personModel.status = PersonStatus.WAITING;
             this.floorsViews.find(f => f.floorNumber === personModel.souseceFloor)?.regroupPassengers();
+            const direction = personModel.destinationFloor > personModel.souseceFloor ? ElevatorDirection.UP : ElevatorDirection.DOWN;
+            const visitRequest = new StopRequest(personModel.souseceFloor, direction, personModel.id);
+            eventBus.emit(HouseEvents.PERSON_REACHED_ELEVATOR, visitRequest);
         })
         .start();
     }
@@ -137,7 +140,6 @@ export class FloorController {
         const floorView = this.floorsViews.find(f => f.floorNumber === floor);
         passengers.forEach(person => {
             const personView = floorView?.children.find(p => p instanceof PersonView && p.person.id === person.id);
-            console.log(personView);
             if (personView) {
                 floorView?.removeChild(personView);
             }
