@@ -1,6 +1,5 @@
 import { Container, Graphics, Text } from "pixi.js";
 
-
 export class FloorView extends Container {
   constructor(public floorNumber: number, public floorWidth: number, public floourHeight: number) {
     super();
@@ -22,5 +21,10 @@ export class FloorView extends Container {
     });
     text.position.set(this.floorWidth - 120, this.floourHeight - 25);
     this.addChild(text);
+  }
+
+  public addPassenger(passenger: Container) {
+    this.addChild(passenger);
+    passenger.position.set(135, 0);
   }
 }

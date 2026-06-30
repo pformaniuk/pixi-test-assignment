@@ -32,6 +32,7 @@ export class FloorController {
     private onElevatorArrived(floor: number, direction: ElevatorDirection, passengersOfeElevator: PersonModel[]) {
         console.log(passengersOfeElevator.map(p => p.destinationFloor + 1));
         const unloadedPassengers = this.unloadPassengers(floor, passengersOfeElevator);
+        this.addPassengersToDestinationFloorView(floor, unloadedPassengers);
         eventBus.emit(HouseEvents.UNLOAD_PASSENGERS, unloadedPassengers, floor, direction);
     }
 
@@ -139,6 +140,21 @@ export class FloorController {
             if (personView) {
                 floorView?.removeChild(personView);
             }
+        });
+    }
+
+    addPassengersToDestinationFloorView(floor: number, passengers: PersonModel[]) {
+        const floorView = this.floorsViews.find(f => f.floorNumber === floor);
+        passengers.forEach(person => {
+            const personView = new PersonView(person);
+            floorView?.addPassenger(personView);
+            const x = (floorView?.width ?? 0) - personView.width;
+            new TWEEN.Tween(personView.position, true)
+                .to({ x: x ?? 0 }, 10000)
+                .onComplete(() => {
+                    personView.destroy();
+                })
+                .start();
         });
     }
 }
