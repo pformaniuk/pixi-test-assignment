@@ -32,24 +32,16 @@ export class ElevatorController {
       this.elevatorModel,
       this.ELEVATOR_SHAFT_WIDTH,
       this.house.floorHeightValue,
-    );
-    this.elevatorCageView.position.y = this.elevatorCageView.getYForFloor(
-      0,
-      this.house.buildingHeightValue,
+      this.house.height,
       this.house.floorHeightValue,
     );
-
+  
     this.house.attachElevator(this.elevatorShaftView, this.elevatorCageView);
     this.moveElevatorToNextFloor();
+
     eventBus.on(HouseEvents.LOAD_PASSENGERS, this.onLoadPassengers.bind(this));
-    eventBus.on(
-      HouseEvents.UNLOAD_PASSENGERS,
-      this.onUnloadPassengers.bind(this),
-    );
-    eventBus.on(
-      HouseEvents.PERSON_REACHED_ELEVATOR,
-      this.onPersonReachedElevator.bind(this),
-    );
+    eventBus.on(HouseEvents.UNLOAD_PASSENGERS,this.onUnloadPassengers.bind(this));
+    eventBus.on(HouseEvents.PERSON_REACHED_ELEVATOR,this.onPersonReachedElevator.bind(this));
   }
 
   private moveElevatorToNextFloor() {
@@ -72,8 +64,6 @@ export class ElevatorController {
   private moveElevatorToFloor(floor: number) {
     this.elevatorCageView.moveToFloor(
       floor,
-      this.house.buildingHeightValue,
-      this.house.floorHeightValue,
       this.onElevatorMovedToFloor.bind(this, floor),
     );
   }

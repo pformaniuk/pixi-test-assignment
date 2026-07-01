@@ -9,9 +9,17 @@ export class ElevatorCageView extends Container {
     public elevator: ElevatorModel,
     public elevatorCageWidth: number,
     public elevatorCageHeight: number,
+    public buildingHeight: number,
+    public floorHeight: number,
   ) {
     super();
+
     this.initBackground();
+    this.initPosition();
+  }
+
+  private initPosition() {
+    this.position.y = this.getYForFloor(0);
   }
 
   private initBackground() {
@@ -33,19 +41,15 @@ export class ElevatorCageView extends Container {
 
   public getYForFloor(
     floor: number,
-    buildingHeight: number,
-    floorHeight: number,
   ) {
-    return buildingHeight - floor * floorHeight - this.elevatorCageHeight;
+    return this.buildingHeight - floor * this.floorHeight - this.elevatorCageHeight;
   }
 
   public moveToFloor(
     floor: number,
-    buildingHeight: number,
-    floorHeight: number,
     onComplete?: () => void,
   ) {
-    const y = this.getYForFloor(floor, buildingHeight, floorHeight);
+    const y = this.getYForFloor(floor);
 
     new TWEEN.Tween(this.position, true)
       .to({ y }, config.elevatorSpeed * 1000)
