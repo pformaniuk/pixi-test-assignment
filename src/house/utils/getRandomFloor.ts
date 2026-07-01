@@ -2,21 +2,21 @@ const getRandomFloor = (totalFloors: number) => {
   return Math.floor(Math.random() * totalFloors);
 };
 
-const getRandomDestinationFloor = (currentFloor: number, totalFloors: number) => {
-    let destinationFloor = Math.floor(Math.random() * totalFloors);
+const getRandomDestinationFloor = (
+  currentFloor: number,
+  totalFloors: number,
+) => {
+  return (
+    (currentFloor + 1 + Math.floor(Math.random() * (totalFloors - 1))) %
+    totalFloors
+  );
+};
 
-    while (destinationFloor === currentFloor) {
-      destinationFloor = Math.floor(Math.random() * totalFloors);
-    }
+export default (totalFloors: number) => {
+  const currentFloor = getRandomFloor(totalFloors);
 
-    return destinationFloor;
-}
-
-export default (totalFloors:number) => {
-    const currentFloor = getRandomFloor(totalFloors);
-    
-    return {
-        currentFloor: getRandomFloor(totalFloors),
-        destinationFloor: getRandomDestinationFloor(currentFloor, totalFloors),
-    }
-}
+  return {
+    currentFloor,
+    destinationFloor: getRandomDestinationFloor(currentFloor, totalFloors),
+  };
+};
