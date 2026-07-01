@@ -78,7 +78,7 @@ export class FloorController {
       this.house.addFloor(floorView);
       this.floorsViews.push(floorView);
 
-      const floorModel = new FloorModel(i);
+      const floorModel = new FloorModel(i, this.totalFloors);
       this.floors.push(floorModel);
     }
   }
@@ -140,30 +140,16 @@ export class FloorController {
     capacity: number,
   ) {
     const floorModel = this.floors.find((f) => f.floorNumber === floor);
-    const waitingPassengers = floorModel?.getPassengers();
-    if (!waitingPassengers) return [];
+    if (!floorModel) return [];
 
-    const withRighDirection = waitingPassengers.filter((person) => {
-      return (
-        (direction === ElevatorDirection.UP &&
-          person.destinationFloor > floor) ||
-        (direction === ElevatorDirection.DOWN &&
-          person.destinationFloor < floor) ||
-        floor === 0 ||
-        floor === this.totalFloors - 1
-      );
-    });
+    const eligiblePassengers = floorModel.grabEligiblePassengers(
+      direction,
+      capacity,
+    );
 
-    const withRightCapacity = withRighDirection.slice(0, capacity);
+    this.removePassengersFromFloorView(floor, eligiblePassengers);
 
-    withRightCapacity.forEach((person) => {
-      person.status = PersonStatus.IN_ELEVATOR;
-      floorModel?.removePerson(person);
-    });
-
-    this.removePassengersFromFloorView(floor, withRightCapacity);
-
-    return withRightCapacity;
+    return eligiblePassengers;
   }
 
   removePassengersFromFloorView(floor: number, passengers: PersonModel[]) {
