@@ -4,7 +4,6 @@ import config from "../config.json";
 import { FloorModel } from "./model/FloorModel";
 import { PersonModel } from "./model/PersonModel";
 import { PersonView } from "./view/PersonView";
-import * as TWEEN from "@tweenjs/tween.js";
 import { eventBus, HouseEvents } from "./model/EventEmitter";
 import { PersonStatus } from "./model/PersonStatus";
 import { ElevatorDirection } from "./model/ElevatorStatus";
@@ -90,9 +89,17 @@ export class FloorController {
     const personModel = new PersonModel();
     const floor = this.floors[personModel.souseceFloor];
     const personView = this.addPersonToSpawnPoint(floor, personModel);
-    const spawnTime = getRandomSpawnTime(config.minPersonGenerationInterval, config.maxPersonGenerationInterval);
+    this.floorsViews
+      .find((f) => f.floorNumber === floor.floorNumber)
+      ?.movePassengerToElevator(personView, this.PERSON_SPED, () => {
+        personModel.status = PersonStatus.WAITING;
+        eventBus.emit(
+          HouseEvents.PERSON_REACHED_ELEVATOR,
+          new StopRequest(personModel),
+        );
+      });
 
-    this.movePersonToElevator(personView, personModel);
+    const spawnTime = getRandomSpawnTime(config.minPersonGenerationInterval, config.maxPersonGenerationInterval);
     setTimeout(() => this.generatePerson(), spawnTime);
   }
 
@@ -105,19 +112,6 @@ export class FloorController {
     floorView?.addChild(personView);
 
     return personView;
-  }
-
-  private movePersonToElevator( personView: PersonView, personModel: PersonModel ) {
-    new TWEEN.Tween(personView.position, true)
-      .to({ x: 135 }, this.PERSON_SPED)
-      .onComplete(() => {
-        personModel.status = PersonStatus.WAITING;
-        this.floorsViews
-          .find((f) => f.floorNumber === personModel.souseceFloor)
-          ?.regroupPassengers();
-        eventBus.emit(HouseEvents.PERSON_REACHED_ELEVATOR, new StopRequest(personModel));
-      })
-      .start();
   }
 
   private unloadPassengers(
@@ -163,15 +157,7 @@ export class FloorController {
   ) {
     const floorView = this.floorsViews.find((f) => f.floorNumber === floor);
     passengers.forEach((person) => {
-      const personView = new PersonView(person);
-      floorView?.addPassenger(personView);
-      const x = (floorView?.width ?? 0) - personView.width;
-      new TWEEN.Tween(personView.position, true)
-        .to({ x: x ?? 0 }, this.PERSON_SPED)
-        .onComplete(() => {
-          personView.destroy();
-        })
-        .start();
+      floorView?.unloadPassenger(new PersonView(person), this.PERSON_SPED);
     });
   }
 }

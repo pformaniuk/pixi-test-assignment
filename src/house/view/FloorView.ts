@@ -1,7 +1,10 @@
 import { Container, Graphics, Text } from "pixi.js";
+import * as TWEEN from "@tweenjs/tween.js";
 import { PersonView } from "./PersonView";
 
 export class FloorView extends Container {
+  static readonly ELEVATOR_X = 135;
+
   constructor(
     public floorNumber: number,
     public floorWidth: number,
@@ -29,14 +32,37 @@ export class FloorView extends Container {
 
   public addPassenger(passenger: Container) {
     this.addChild(passenger);
-    passenger.position.set(135, 0);
+    passenger.position.set(FloorView.ELEVATOR_X, 0);
+  }
+
+  public movePassengerToElevator(
+    passenger: PersonView,
+    duration: number,
+    onComplete?: () => void,
+  ) {
+    new TWEEN.Tween(passenger.position, true)
+      .to({ x: FloorView.ELEVATOR_X }, duration)
+      .onComplete(() => {
+        this.regroupPassengers();
+        onComplete?.();
+      })
+      .start();
+  }
+
+  public unloadPassenger(passenger: PersonView, duration: number) {
+    this.addPassenger(passenger);
+
+    new TWEEN.Tween(passenger.position, true)
+      .to({ x: this.floorWidth - PersonView.SIZE }, duration)
+      .onComplete(() => passenger.destroy())
+      .start();
   }
 
   public regroupPassengers() {
     const passengers = this.children.filter((c) => c instanceof PersonView);
     const offset = PersonView.SIZE + 10;
     passengers.forEach((p, index) => {
-      p.position.set(135 + offset * index, 0);
+      p.position.set(FloorView.ELEVATOR_X + offset * index, 0);
     });
   }
 }
