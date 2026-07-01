@@ -11,9 +11,6 @@ import { StopRequest } from "./model/StopRequest";
 import getRandomSpawnTime from "./utils/getRandomSpawnTime";
 
 export class FloorController {
-  PERSON_SPED: number = 10000;
-
-  totalFloors: number;
   floorHeight: number;
   buildingWidth: number;
   buildingHeight: number;
@@ -21,21 +18,15 @@ export class FloorController {
   floorsViews: FloorView[] = [];
 
   constructor(private house: HouseView) {
-    this.totalFloors = config.floors;
     this.floorHeight = this.house.floorHeightValue;
     this.buildingWidth = this.house.buildingWidthValue;
     this.buildingHeight = this.house.buildingHeightValue;
 
     this.initFloors();
     this.generatePerson();
-    eventBus.on(
-      HouseEvents.ELEVATOR_ARRIVED,
-      this.onElevatorArrived.bind(this),
-    );
-    eventBus.on(
-      HouseEvents.PASSENGER_UNLOADED,
-      this.onPassengerUnloaded.bind(this),
-    );
+
+    eventBus.on(HouseEvents.ELEVATOR_ARRIVED, this.onElevatorArrived.bind(this));
+    eventBus.on(HouseEvents.PASSENGER_UNLOADED,this.onPassengerUnloaded.bind(this));
   }
 
   private onElevatorArrived(
@@ -73,14 +64,14 @@ export class FloorController {
   }
 
   private initFloors() {
-    for (let i = 0; i < this.totalFloors; i++) {
+    for (let i = 0; i < config.floors; i++) {
       const floorView = new FloorView(i, this.buildingWidth, this.floorHeight);
       
       floorView.y = this.buildingHeight - (i + 1) * this.floorHeight;
       this.house.addFloor(floorView);
       this.floorsViews.push(floorView);
 
-      const floorModel = new FloorModel(i, this.totalFloors);
+      const floorModel = new FloorModel(i);
       this.floors.push(floorModel);
     }
   }

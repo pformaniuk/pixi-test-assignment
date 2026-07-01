@@ -2,14 +2,12 @@ import { IFloorModel } from "./IFloorModel";
 import { PersonStatus } from "./PersonStatus";
 import { PersonModel } from "./PersonModel";
 import { ElevatorDirection } from "./ElevatorStatus";
+import config from "../../config.json";
 
 export class FloorModel implements IFloorModel {
   public people: PersonModel[] = [];
 
-  constructor(
-    public floorNumber: number,
-    private totalFloors: number,
-  ) {}
+  constructor(public floorNumber: number) {}
 
   public getPassengers(): PersonModel[] {
     return this.people.filter(
@@ -28,7 +26,7 @@ export class FloorModel implements IFloorModel {
         (direction === ElevatorDirection.DOWN &&
           person.destinationFloor < this.floorNumber) ||
         this.floorNumber === 0 ||
-        this.floorNumber === this.totalFloors - 1
+        this.floorNumber === config.floors - 1
       );
     });
 

@@ -1,6 +1,8 @@
 import { Container, Graphics } from "pixi.js";
+import * as TWEEN from "@tweenjs/tween.js";
 import { ElevatorModel } from "../model/ElevatorModel";
 import { PersonView } from "./PersonView";
+import config from "../../config.json";
 
 export class ElevatorCageView extends Container {
   constructor(
@@ -27,6 +29,28 @@ export class ElevatorCageView extends Container {
   public removePassenger(passenger: PersonView) {
     this.removeChild(passenger);
     this.layoutPassengers();
+  }
+
+  public getYForFloor(
+    floor: number,
+    buildingHeight: number,
+    floorHeight: number,
+  ) {
+    return buildingHeight - floor * floorHeight - this.elevatorCageHeight;
+  }
+
+  public moveToFloor(
+    floor: number,
+    buildingHeight: number,
+    floorHeight: number,
+    onComplete?: () => void,
+  ) {
+    const y = this.getYForFloor(floor, buildingHeight, floorHeight);
+
+    new TWEEN.Tween(this.position, true)
+      .to({ y }, config.elevatorSpeed * 1000)
+      .onComplete(() => onComplete?.())
+      .start();
   }
 
   layoutPassengers() {

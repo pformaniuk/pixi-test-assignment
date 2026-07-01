@@ -3,7 +3,6 @@ import { HouseView } from "./view/HouseView";
 import { ElevatorModel } from "./model/ElevatorModel";
 import { ElevatorShaftView } from "./view/ElevatorShaftView";
 import { ElevatorCageView } from "./view/ElevatorCageView";
-import * as TWEEN from "@tweenjs/tween.js";
 import { ElevatorDirection } from "./model/ElevatorStatus";
 import { eventBus, HouseEvents } from "./model/EventEmitter";
 import { PersonModel } from "./model/PersonModel";
@@ -34,8 +33,11 @@ export class ElevatorController {
       this.ELEVATOR_SHAFT_WIDTH,
       this.house.floorHeightValue,
     );
-    this.elevatorCageView.position.y =
-      this.house.buildingHeightValue - this.house.floorHeightValue;
+    this.elevatorCageView.position.y = this.elevatorCageView.getYForFloor(
+      0,
+      this.house.buildingHeightValue,
+      this.house.floorHeightValue,
+    );
 
     this.house.attachElevator(this.elevatorShaftView, this.elevatorCageView);
     this.moveElevatorToNextFloor();
@@ -68,29 +70,29 @@ export class ElevatorController {
   }
 
   private moveElevatorToFloor(floor: number) {
-    const y =
-      this.house.buildingHeightValue -
-      floor * this.house.floorHeightValue -
-      this.elevatorCageView.height;
-    new TWEEN.Tween(this.elevatorCageView.position, true)
-      .to({ y }, config.elevatorSpeed * 1000)
-      .onComplete(async () => {
-        this.elevatorModel.currentFloor = floor;
-        if (this.shouldStopAtFloor(floor, this.direction)) {
-          eventBus.emit(
-            HouseEvents.ELEVATOR_ARRIVED,
-            floor,
-            this.direction,
-            this.elevatorModel.passengers,
-          );
-          await new Promise((resolve) =>
-            setTimeout(resolve, config.elevatorDelayTime),
-          );
-        }
+    this.elevatorCageView.moveToFloor(
+      floor,
+      this.house.buildingHeightValue,
+      this.house.floorHeightValue,
+      this.onElevatorMovedToFloor.bind(this, floor),
+    );
+  }
 
-        this.moveElevatorToNextFloor();
-      })
-      .start();
+  private async onElevatorMovedToFloor(floor: number) {
+      this.elevatorModel.currentFloor = floor;
+      if (this.shouldStopAtFloor(floor, this.direction, this.elevatorModel.passengers)) {
+        eventBus.emit(
+          HouseEvents.ELEVATOR_ARRIVED,
+          floor,
+          this.direction,
+          this.elevatorModel.passengers,
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, config.elevatorDelayTime),
+        );
+      }
+
+      this.moveElevatorToNextFloor();
   }
 
   private onLoadPassengers(passengers: PersonModel[]) {
@@ -133,7 +135,7 @@ export class ElevatorController {
     this.stopRequests.push(request);
   }
 
-  private shouldStopAtFloor(floor: number, direction: ElevatorDirection) {
+  private shouldStopAtFloor(floor: number, direction: ElevatorDirection, passengers: PersonModel[]) {
     return (
       this.stopRequests.some(
         (r) =>
@@ -142,7 +144,7 @@ export class ElevatorController {
             floor === 0 ||
             floor === config.floors - 1),
       ) ||
-      this.elevatorModel.passengers.some((p) => p.destinationFloor === floor)
+      passengers.some((p) => p.destinationFloor === floor)
     );
   }
 }
