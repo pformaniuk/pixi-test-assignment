@@ -4,5 +4,6 @@
     "elevatorSpeed": 1,
     "elevatorDelayTime": 800,
     "minPersonGenerationInterval": 4000,
-    "maxPersonGenerationInterval": 10000
+    "maxPersonGenerationInterval": 10000,
+    "personMoveTime": 10000
 }

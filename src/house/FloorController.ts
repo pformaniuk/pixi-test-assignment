@@ -91,7 +91,7 @@ export class FloorController {
     const personView = this.addPersonToSpawnPoint(floor, personModel);
     this.floorsViews
       .find((f) => f.floorNumber === floor.floorNumber)
-      ?.movePassengerToElevator(personView, this.PERSON_SPED, () => {
+      ?.movePassengerToElevator(personView, () => {
         personModel.status = PersonStatus.WAITING;
         eventBus.emit(
           HouseEvents.PERSON_REACHED_ELEVATOR,
@@ -139,7 +139,7 @@ export class FloorController {
     return eligiblePassengers;
   }
 
-  removePassengersFromFloorView(floor: number, passengers: PersonModel[]) {
+  private removePassengersFromFloorView(floor: number, passengers: PersonModel[]) {
     const floorView = this.floorsViews.find((f) => f.floorNumber === floor);
     passengers.forEach((person) => {
       const personView = floorView?.children.find(
@@ -151,13 +151,13 @@ export class FloorController {
     });
   }
 
-  addPassengersToDestinationFloorView(
+  private addPassengersToDestinationFloorView(
     floor: number,
     passengers: PersonModel[],
   ) {
     const floorView = this.floorsViews.find((f) => f.floorNumber === floor);
     passengers.forEach((person) => {
-      floorView?.unloadPassenger(new PersonView(person), this.PERSON_SPED);
+      floorView?.unloadPassenger(new PersonView(person));
     });
   }
 }

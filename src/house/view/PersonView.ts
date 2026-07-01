@@ -1,5 +1,6 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { PersonModel } from "../model/PersonModel";
+import config from "../../config.json";
 
 export class PersonView extends Container {
   static readonly SIZE = 30;
@@ -27,5 +28,9 @@ export class PersonView extends Container {
     });
     text.position.set(0, 0);
     this.addChild(text);
+  }
+
+  get moveTime() {
+    return config.personMoveTime;
   }
 }

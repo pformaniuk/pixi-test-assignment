@@ -4,7 +4,6 @@ import { PersonView } from "./PersonView";
 
 export class FloorView extends Container {
   static readonly ELEVATOR_X = 135;
-
   constructor(
     public floorNumber: number,
     public floorWidth: number,
@@ -37,11 +36,10 @@ export class FloorView extends Container {
 
   public movePassengerToElevator(
     passenger: PersonView,
-    duration: number,
     onComplete?: () => void,
   ) {
     new TWEEN.Tween(passenger.position, true)
-      .to({ x: FloorView.ELEVATOR_X }, duration)
+      .to({ x: FloorView.ELEVATOR_X }, passenger.moveTime)
       .onComplete(() => {
         this.regroupPassengers();
         onComplete?.();
@@ -49,11 +47,11 @@ export class FloorView extends Container {
       .start();
   }
 
-  public unloadPassenger(passenger: PersonView, duration: number) {
+  public unloadPassenger(passenger: PersonView) {
     this.addPassenger(passenger);
 
     new TWEEN.Tween(passenger.position, true)
-      .to({ x: this.floorWidth - PersonView.SIZE }, duration)
+      .to({ x: this.floorWidth - PersonView.SIZE }, passenger.moveTime)
       .onComplete(() => passenger.destroy())
       .start();
   }
