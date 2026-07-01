@@ -29,40 +29,6 @@ export class FloorController {
     eventBus.on(HouseEvents.PASSENGER_UNLOADED,this.onPassengerUnloaded.bind(this));
   }
 
-  private onElevatorArrived(
-    floor: number,
-    direction: ElevatorDirection,
-    passengersOfeElevator: PersonModel[],
-  ) {
-    const unloadedPassengers = this.unloadPassengers(
-      floor,
-      passengersOfeElevator,
-    );
-    this.addPassengersToDestinationFloorView(floor, unloadedPassengers);
-    eventBus.emit(
-      HouseEvents.UNLOAD_PASSENGERS,
-      unloadedPassengers,
-      floor,
-      direction,
-    );
-  }
-
-  private onPassengerUnloaded(
-    floor: number,
-    direction: ElevatorDirection,
-    passengers: PersonModel[],
-  ) {
-    const eligiblePassengers = this.grabEligiblePassengers(
-      floor,
-      direction,
-      passengers
-    );
-
-    this.removePassengersFromFloorView(floor, eligiblePassengers);
-
-    eventBus.emit(HouseEvents.LOAD_PASSENGERS, eligiblePassengers);
-  }
-
   private initFloors() {
     for (let i = 0; i < config.floors; i++) {
       const floorView = new FloorView(i, this.buildingWidth, this.floorHeight);
@@ -82,13 +48,10 @@ export class FloorController {
     const personView = this.addPersonToSpawnPoint(floor, personModel);
     this.floorsViews
       .find((f) => f.floorNumber === floor.floorNumber)
-      ?.movePassengerToElevator(personView, () => {
-        personModel.status = PersonStatus.WAITING;
-        eventBus.emit(
-          HouseEvents.PERSON_REACHED_ELEVATOR,
-          new StopRequest(personModel),
-        );
-      });
+      ?.movePassengerToElevator(
+        personView, 
+        this.onPersonReachedElevator.bind(this, personModel)
+      );
 
     const spawnTime = getRandomSpawnTime(config.minPersonGenerationInterval, config.maxPersonGenerationInterval);
     setTimeout(() => this.generatePerson(), spawnTime);
@@ -150,5 +113,47 @@ export class FloorController {
     passengers.forEach((person) => {
       floorView?.unloadPassenger(new PersonView(person));
     });
+  }
+
+  private onPersonReachedElevator(person: PersonModel) {
+    person.status = PersonStatus.WAITING;
+    eventBus.emit(
+      HouseEvents.PERSON_REACHED_ELEVATOR,
+      new StopRequest(person),
+    );
+  }
+
+  private onElevatorArrived(
+    floor: number,
+    direction: ElevatorDirection,
+    passengersOfeElevator: PersonModel[],
+  ) {
+    const unloadedPassengers = this.unloadPassengers(
+      floor,
+      passengersOfeElevator,
+    );
+    this.addPassengersToDestinationFloorView(floor, unloadedPassengers);
+    eventBus.emit(
+      HouseEvents.UNLOAD_PASSENGERS,
+      unloadedPassengers,
+      floor,
+      direction,
+    );
+  }
+
+  private onPassengerUnloaded(
+    floor: number,
+    direction: ElevatorDirection,
+    passengers: PersonModel[],
+  ) {
+    const eligiblePassengers = this.grabEligiblePassengers(
+      floor,
+      direction,
+      passengers
+    );
+
+    this.removePassengersFromFloorView(floor, eligiblePassengers);
+
+    eventBus.emit(HouseEvents.LOAD_PASSENGERS, eligiblePassengers);
   }
 }
