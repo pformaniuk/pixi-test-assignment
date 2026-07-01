@@ -7,7 +7,6 @@ import { PersonView } from "./view/PersonView";
 import { eventBus, HouseEvents } from "./model/EventEmitter";
 import { PersonStatus } from "./model/PersonStatus";
 import { ElevatorDirection } from "./model/ElevatorStatus";
-import { StopRequest } from "./model/StopRequest";
 import getRandomSpawnTime from "./utils/getRandomSpawnTime";
 
 export class FloorController {
@@ -45,27 +44,17 @@ export class FloorController {
   private generatePerson() {
     const personModel = new PersonModel();
     const floor = this.floors[personModel.souseceFloor];
-    const personView = this.addPersonToSpawnPoint(floor, personModel);
+    floor.addPerson(personModel);
+
     this.floorsViews
       .find((f) => f.floorNumber === floor.floorNumber)
-      ?.movePassengerToElevator(
-        personView, 
-        this.onPersonReachedElevator.bind(this, personModel)
-      );
+      ?.spawnPassenger(personModel, this.onPersonReachedElevator.bind(this, personModel));
 
-    const spawnTime = getRandomSpawnTime(config.minPersonGenerationInterval, config.maxPersonGenerationInterval);
+    const spawnTime = getRandomSpawnTime(
+      config.minPersonGenerationInterval,
+      config.maxPersonGenerationInterval,
+    );
     setTimeout(() => this.generatePerson(), spawnTime);
-  }
-
-  private addPersonToSpawnPoint(floor: FloorModel, person: PersonModel) {
-    floor.addPerson(person);
-    const floorView = this.floorsViews.find((f) => f.floorNumber === floor.floorNumber);
-    const personView = new PersonView(person);
-
-    personView.x = floorView?.width ?? 0;
-    floorView?.addChild(personView);
-
-    return personView;
   }
 
   private unloadPassengers(
@@ -83,14 +72,6 @@ export class FloorController {
     });
 
     return toUnload;
-  }
-
-  private grabEligiblePassengers( floor: number, direction: ElevatorDirection, passengers: PersonModel[] ): PersonModel[] {
-    const capacity = config.elevatorMaxCapacity - passengers.length;
-    const floorModel = this.floors.find((f) => f.floorNumber === floor);
-    const eligiblePassengers = floorModel?.grabEligiblePassengers(direction, capacity) ?? [];
-
-    return eligiblePassengers;
   }
 
   private removePassengersFromFloorView(floor: number, passengers: PersonModel[]) {
@@ -119,7 +100,7 @@ export class FloorController {
     person.status = PersonStatus.WAITING;
     eventBus.emit(
       HouseEvents.PERSON_REACHED_ELEVATOR,
-      new StopRequest(person),
+      person.reachElevator(),
     );
   }
 
@@ -141,16 +122,10 @@ export class FloorController {
     );
   }
 
-  private onPassengerUnloaded(
-    floor: number,
-    direction: ElevatorDirection,
-    passengers: PersonModel[],
-  ) {
-    const eligiblePassengers = this.grabEligiblePassengers(
-      floor,
-      direction,
-      passengers
-    );
+  private onPassengerUnloaded(floor: number, direction: ElevatorDirection, passengers: PersonModel[]) {
+    const floorModel = this.floors.find((f) => f.floorNumber === floor);
+    const eligiblePassengers =
+      floorModel?.grabEligiblePassengers(direction, passengers) ?? [];
 
     this.removePassengersFromFloorView(floor, eligiblePassengers);
 

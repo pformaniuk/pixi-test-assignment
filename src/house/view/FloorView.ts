@@ -1,5 +1,6 @@
 import { Container, Graphics, Text } from "pixi.js";
 import * as TWEEN from "@tweenjs/tween.js";
+import { PersonModel } from "../model/PersonModel";
 import { PersonView } from "./PersonView";
 
 export class FloorView extends Container {
@@ -32,6 +33,13 @@ export class FloorView extends Container {
   public addPassenger(passenger: Container) {
     this.addChild(passenger);
     passenger.position.set(FloorView.ELEVATOR_X, 0);
+  }
+
+  public spawnPassenger(person: PersonModel, onReachElevator?: () => void) {
+    const personView = new PersonView(person);
+    personView.x = this.floorWidth;
+    this.addChild(personView);
+    this.movePassengerToElevator(personView, onReachElevator);
   }
 
   public movePassengerToElevator(

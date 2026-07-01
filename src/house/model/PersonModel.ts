@@ -3,6 +3,7 @@ import { PersonStatus } from "./PersonStatus";
 import generatePersonData from "../utils/getRandomFloor";
 import config from "../../config.json";
 import { ElevatorDirection } from "./ElevatorStatus";
+import { StopRequest } from "./StopRequest";
 
 export class PersonModel implements IPersonModel {
   public status: PersonStatus;
@@ -19,5 +20,10 @@ export class PersonModel implements IPersonModel {
 
   get direction(): ElevatorDirection {
     return this.destinationFloor > this.souseceFloor ? ElevatorDirection.UP : ElevatorDirection.DOWN;
+  }
+
+  public reachElevator(): StopRequest {
+    this.status = PersonStatus.WAITING;
+    return new StopRequest(this);
   }
 }

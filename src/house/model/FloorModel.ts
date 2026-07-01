@@ -17,8 +17,9 @@ export class FloorModel implements IFloorModel {
 
   public grabEligiblePassengers(
     direction: ElevatorDirection,
-    capacity: number,
+    elevatorPassengers: PersonModel[],
   ): PersonModel[] {
+    const capacity = config.elevatorMaxCapacity - elevatorPassengers.length;
     const withRightDirection = this.getPassengers().filter((person) => {
       return (
         (direction === ElevatorDirection.UP &&

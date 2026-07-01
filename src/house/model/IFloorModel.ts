@@ -7,6 +7,6 @@ export interface IFloorModel {
   getPassengers(): IPersonModel[];
   grabEligiblePassengers(
     direction: ElevatorDirection,
-    capacity: number,
+    elevatorPassengers: IPersonModel[],
   ): IPersonModel[];
 }
