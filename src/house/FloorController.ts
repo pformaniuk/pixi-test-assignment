@@ -65,8 +65,11 @@ export class FloorController {
     const eligiblePassengers = this.grabEligiblePassengers(
       floor,
       direction,
-      config.elevatorMaxCapacity - passengers.length,
+      passengers
     );
+
+    this.removePassengersFromFloorView(floor, eligiblePassengers);
+
     eventBus.emit(HouseEvents.LOAD_PASSENGERS, eligiblePassengers);
   }
 
@@ -134,20 +137,10 @@ export class FloorController {
     return toUnload;
   }
 
-  private grabEligiblePassengers(
-    floor: number,
-    direction: ElevatorDirection,
-    capacity: number,
-  ) {
+  private grabEligiblePassengers( floor: number, direction: ElevatorDirection, passengers: PersonModel[] ): PersonModel[] {
+    const capacity = config.elevatorMaxCapacity - passengers.length;
     const floorModel = this.floors.find((f) => f.floorNumber === floor);
-    if (!floorModel) return [];
-
-    const eligiblePassengers = floorModel.grabEligiblePassengers(
-      direction,
-      capacity,
-    );
-
-    this.removePassengersFromFloorView(floor, eligiblePassengers);
+    const eligiblePassengers = floorModel?.grabEligiblePassengers(direction, capacity) ?? [];
 
     return eligiblePassengers;
   }
