@@ -36,7 +36,9 @@ export class ElevatorModel implements IElevatorModel {
 
   public fulfillStopRequestsForPassengers(passengers: PersonModel[]): void {
     const ids = new Set(passengers.map((p) => p.id));
-    this.stopRequests = this.stopRequests.filter((r) => !ids.has(r.passengerId));
+    this.stopRequests = this.stopRequests.filter(
+      (r) => !ids.has(r.passengerId),
+    );
   }
 
   public getNextFloor(): number {

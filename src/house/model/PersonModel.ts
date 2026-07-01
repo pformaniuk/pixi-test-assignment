@@ -12,14 +12,18 @@ export class PersonModel implements IPersonModel {
   public destinationFloor: number;
   constructor() {
     this.id = Date.now().toString();
-    const { currentFloor, destinationFloor } = generatePersonData(config.floors);
+    const { currentFloor, destinationFloor } = generatePersonData(
+      config.floors,
+    );
     this.status = PersonStatus.MOVING_TO_ELEVATOR;
     this.souseceFloor = currentFloor;
     this.destinationFloor = destinationFloor;
   }
 
   get direction(): ElevatorDirection {
-    return this.destinationFloor > this.souseceFloor ? ElevatorDirection.UP : ElevatorDirection.DOWN;
+    return this.destinationFloor > this.souseceFloor
+      ? ElevatorDirection.UP
+      : ElevatorDirection.DOWN;
   }
 
   public reachElevator(): StopRequest {

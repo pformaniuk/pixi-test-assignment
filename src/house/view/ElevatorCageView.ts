@@ -50,16 +50,13 @@ export class ElevatorCageView extends Container {
     viewsToRemove.forEach((view) => this.removePassenger(view));
   }
 
-  public getYForFloor(
-    floor: number,
-  ) {
-    return this.buildingHeight - floor * this.floorHeight - this.elevatorCageHeight;
+  public getYForFloor(floor: number) {
+    return (
+      this.buildingHeight - floor * this.floorHeight - this.elevatorCageHeight
+    );
   }
 
-  public moveToFloor(
-    floor: number,
-    onComplete?: () => void,
-  ) {
+  public moveToFloor(floor: number, onComplete?: () => void) {
     const y = this.getYForFloor(floor);
 
     new TWEEN.Tween(this.position, true)

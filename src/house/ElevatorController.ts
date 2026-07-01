@@ -34,13 +34,19 @@ export class ElevatorController {
       this.house.height,
       this.house.floorHeightValue,
     );
-  
+
     this.house.attachElevator(this.elevatorShaftView, this.elevatorCageView);
     this.moveElevatorToNextFloor();
 
     eventBus.on(HouseEvents.LOAD_PASSENGERS, this.onLoadPassengers.bind(this));
-    eventBus.on(HouseEvents.UNLOAD_PASSENGERS,this.onUnloadPassengers.bind(this));
-    eventBus.on(HouseEvents.PERSON_REACHED_ELEVATOR, this.onPersonReachedElevator.bind(this));
+    eventBus.on(
+      HouseEvents.UNLOAD_PASSENGERS,
+      this.onUnloadPassengers.bind(this),
+    );
+    eventBus.on(
+      HouseEvents.PERSON_REACHED_ELEVATOR,
+      this.onPersonReachedElevator.bind(this),
+    );
   }
 
   private moveElevatorToNextFloor() {
@@ -53,20 +59,20 @@ export class ElevatorController {
   }
 
   private async onElevatorMovedToFloor(floor: number) {
-      this.elevatorModel.currentFloor = floor;
-      if (this.elevatorModel.shouldStopAtFloor) {
-        eventBus.emit(
-          HouseEvents.ELEVATOR_ARRIVED,
-          floor,
-          this.elevatorModel.direction,
-          this.elevatorModel.passengers,
-        );
-        await new Promise((resolve) =>
-          setTimeout(resolve, this.elevatorModel.dellayTime),
-        );
-      }
+    this.elevatorModel.currentFloor = floor;
+    if (this.elevatorModel.shouldStopAtFloor) {
+      eventBus.emit(
+        HouseEvents.ELEVATOR_ARRIVED,
+        floor,
+        this.elevatorModel.direction,
+        this.elevatorModel.passengers,
+      );
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.elevatorModel.dellayTime),
+      );
+    }
 
-      this.moveElevatorToNextFloor();
+    this.moveElevatorToNextFloor();
   }
 
   private onLoadPassengers(passengers: PersonModel[]) {
@@ -78,11 +84,20 @@ export class ElevatorController {
     this.elevatorModel.fulfillStopRequestsForPassengers(passengers);
   }
 
-  private onUnloadPassengers(passengers: PersonModel[], floor: number,direction: ElevatorDirection) {
+  private onUnloadPassengers(
+    passengers: PersonModel[],
+    floor: number,
+    direction: ElevatorDirection,
+  ) {
     this.elevatorModel.unloadPassengers(passengers);
     this.elevatorCageView.unloadPassengers(passengers);
 
-    eventBus.emit(HouseEvents.PASSENGER_UNLOADED, floor, direction, this.elevatorModel.passengers);
+    eventBus.emit(
+      HouseEvents.PASSENGER_UNLOADED,
+      floor,
+      direction,
+      this.elevatorModel.passengers,
+    );
   }
 
   private onPersonReachedElevator(request: StopRequest) {
