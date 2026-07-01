@@ -3,7 +3,6 @@ import { HouseController } from "./house/HouseController";
 import * as TWEEN from "@tweenjs/tween.js";
 
 (async () => {
-  // Create a new application
   const app = new Application();
 
   await app.init({ background: "#1099bb", resizeTo: window });
@@ -11,7 +10,6 @@ import * as TWEEN from "@tweenjs/tween.js";
 
   new HouseController(app.stage);
 
-  // Listen for animate update
   app.ticker.add((ticker) => {
     TWEEN.update(ticker.lastTime);
   });

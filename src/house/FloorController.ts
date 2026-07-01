@@ -9,8 +9,11 @@ import { eventBus, HouseEvents } from "./model/EventEmitter";
 import { PersonStatus } from "./model/PersonStatus";
 import { ElevatorDirection } from "./model/ElevatorStatus";
 import { StopRequest } from "./model/StopRequest";
+import getRandomSpawnTime from "./utils/getRandomSpawnTime";
 
 export class FloorController {
+  PERSON_SPED: number = 10000;
+
   totalFloors: number;
   floorHeight: number;
   buildingWidth: number;
@@ -70,6 +73,7 @@ export class FloorController {
   private initFloors() {
     for (let i = 0; i < this.totalFloors; i++) {
       const floorView = new FloorView(i, this.buildingWidth, this.floorHeight);
+      
       floorView.y = this.buildingHeight - (i + 1) * this.floorHeight;
       this.house.addFloor(floorView);
       this.floorsViews.push(floorView);
@@ -80,72 +84,35 @@ export class FloorController {
   }
 
   private generatePerson() {
-    const randomCurrentFloor = Math.floor(Math.random() * this.floors.length);
-    const randomDestinationFloor = this.getRandomDestinationFloor(
-      randomCurrentFloor,
-      this.totalFloors,
-    );
-    const floor = this.floors[randomCurrentFloor];
-    const personModel = new PersonModel(
-      randomCurrentFloor,
-      randomDestinationFloor,
-    );
+    const personModel = new PersonModel();
+    const floor = this.floors[personModel.souseceFloor];
     const personView = this.addPersonToSpawnPoint(floor, personModel);
+    const spawnTime = getRandomSpawnTime(config.minPersonGenerationInterval, config.maxPersonGenerationInterval);
+
     this.movePersonToElevator(personView, personModel);
-    setTimeout(
-      () => {
-        this.generatePerson();
-      },
-      Math.floor(
-        Math.random() *
-          (config.maxPersonGenerationInterval -
-            config.minPersonGenerationInterval),
-      ) + config.minPersonGenerationInterval,
-    );
-  }
-
-  private getRandomDestinationFloor(currentFloor: number, totalFloors: number) {
-    let destinationFloor = Math.floor(Math.random() * totalFloors);
-    while (destinationFloor === currentFloor) {
-      destinationFloor = Math.floor(Math.random() * totalFloors);
-    }
-
-    return destinationFloor;
+    setTimeout(() => this.generatePerson(), spawnTime);
   }
 
   private addPersonToSpawnPoint(floor: FloorModel, person: PersonModel) {
     floor.addPerson(person);
-    const floorView = this.floorsViews.find(
-      (f) => f.floorNumber === floor.floorNumber,
-    );
+    const floorView = this.floorsViews.find((f) => f.floorNumber === floor.floorNumber);
     const personView = new PersonView(person);
+
     personView.x = floorView?.width ?? 0;
     floorView?.addChild(personView);
 
     return personView;
   }
 
-  private movePersonToElevator(
-    personView: PersonView,
-    personModel: PersonModel,
-  ) {
+  private movePersonToElevator( personView: PersonView, personModel: PersonModel ) {
     new TWEEN.Tween(personView.position, true)
-      .to({ x: 135 }, 10000)
+      .to({ x: 135 }, this.PERSON_SPED)
       .onComplete(() => {
         personModel.status = PersonStatus.WAITING;
         this.floorsViews
           .find((f) => f.floorNumber === personModel.souseceFloor)
           ?.regroupPassengers();
-        const direction =
-          personModel.destinationFloor > personModel.souseceFloor
-            ? ElevatorDirection.UP
-            : ElevatorDirection.DOWN;
-        const visitRequest = new StopRequest(
-          personModel.souseceFloor,
-          direction,
-          personModel.id,
-        );
-        eventBus.emit(HouseEvents.PERSON_REACHED_ELEVATOR, visitRequest);
+        eventBus.emit(HouseEvents.PERSON_REACHED_ELEVATOR, new StopRequest(personModel));
       })
       .start();
   }
@@ -221,7 +188,7 @@ export class FloorController {
       floorView?.addPassenger(personView);
       const x = (floorView?.width ?? 0) - personView.width;
       new TWEEN.Tween(personView.position, true)
-        .to({ x: x ?? 0 }, 10000)
+        .to({ x: x ?? 0 }, this.PERSON_SPED)
         .onComplete(() => {
           personView.destroy();
         })
