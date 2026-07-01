@@ -15,14 +15,13 @@ export class ElevatorController {
   private elevatorCageView: ElevatorCageView;
   private elevatorShaftView: ElevatorShaftView;
   private elevatorModel: ElevatorModel;
-  private direction: ElevatorDirection = ElevatorDirection.UP;
-  private stopRequests: StopRequest[] = [];
 
   constructor(private house: HouseView) {
     this.elevatorModel = new ElevatorModel(
       config.elevatorMaxCapacity,
       config.elevatorSpeed,
       config.elevatorDelayTime,
+      config.floors,
     );
     this.elevatorShaftView = new ElevatorShaftView(
       this.ELEVATOR_SHAFT_WIDTH,
@@ -41,44 +40,29 @@ export class ElevatorController {
 
     eventBus.on(HouseEvents.LOAD_PASSENGERS, this.onLoadPassengers.bind(this));
     eventBus.on(HouseEvents.UNLOAD_PASSENGERS,this.onUnloadPassengers.bind(this));
-    eventBus.on(HouseEvents.PERSON_REACHED_ELEVATOR,this.onPersonReachedElevator.bind(this));
+    eventBus.on(HouseEvents.PERSON_REACHED_ELEVATOR, this.onPersonReachedElevator.bind(this));
   }
 
   private moveElevatorToNextFloor() {
-    let nextFloor: number;
-    if (this.elevatorModel.currentFloor === config.floors - 1) {
-      this.direction = ElevatorDirection.DOWN;
-    } else if (this.elevatorModel.currentFloor === 0) {
-      this.direction = ElevatorDirection.UP;
-    }
+    const nextFloor = this.elevatorModel.getNextFloor();
 
-    if (this.direction === ElevatorDirection.UP) {
-      nextFloor = this.elevatorModel.currentFloor + 1;
-    } else {
-      nextFloor = this.elevatorModel.currentFloor - 1;
-    }
-
-    this.moveElevatorToFloor(nextFloor);
-  }
-
-  private moveElevatorToFloor(floor: number) {
     this.elevatorCageView.moveToFloor(
-      floor,
-      this.onElevatorMovedToFloor.bind(this, floor),
+      nextFloor,
+      this.onElevatorMovedToFloor.bind(this, nextFloor),
     );
   }
 
   private async onElevatorMovedToFloor(floor: number) {
       this.elevatorModel.currentFloor = floor;
-      if (this.shouldStopAtFloor(floor, this.direction, this.elevatorModel.passengers)) {
+      if (this.elevatorModel.shouldStopAtFloor) {
         eventBus.emit(
           HouseEvents.ELEVATOR_ARRIVED,
           floor,
-          this.direction,
+          this.elevatorModel.direction,
           this.elevatorModel.passengers,
         );
         await new Promise((resolve) =>
-          setTimeout(resolve, config.elevatorDelayTime),
+          setTimeout(resolve, this.elevatorModel.dellayTime),
         );
       }
 
@@ -91,50 +75,17 @@ export class ElevatorController {
     this.elevatorCageView.addPassenger(
       ...passengers.map((p) => new PersonView(p)),
     );
-    this.stopRequests = this.stopRequests.filter(
-      (r) => !passengers.some((p) => p.id === r.passengerId),
-    );
+    this.elevatorModel.fulfillStopRequestsForPassengers(passengers);
   }
 
-  private onUnloadPassengers(
-    passengers: PersonModel[],
-    floor: number,
-    direction: ElevatorDirection,
-  ) {
-    const idsToRemove = new Set(passengers.map((p) => p.id));
-    this.elevatorModel.passengers = this.elevatorModel.passengers.filter(
-      (p) => !idsToRemove.has(p.id),
-    );
+  private onUnloadPassengers(passengers: PersonModel[], floor: number,direction: ElevatorDirection) {
+    this.elevatorModel.unloadPassengers(passengers);
+    this.elevatorCageView.unloadPassengers(passengers);
 
-    const viewsToRemove = this.elevatorCageView.children.filter(
-      (c) =>
-        c instanceof PersonView && passengers.some((p) => p.id === c.person.id),
-    );
-    viewsToRemove.forEach((v) =>
-      this.elevatorCageView.removePassenger(v as PersonView),
-    );
-    eventBus.emit(
-      HouseEvents.PASSENGER_UNLOADED,
-      floor,
-      direction,
-      this.elevatorModel.passengers,
-    );
+    eventBus.emit(HouseEvents.PASSENGER_UNLOADED, floor, direction, this.elevatorModel.passengers);
   }
 
   private onPersonReachedElevator(request: StopRequest) {
-    this.stopRequests.push(request);
-  }
-
-  private shouldStopAtFloor(floor: number, direction: ElevatorDirection, passengers: PersonModel[]) {
-    return (
-      this.stopRequests.some(
-        (r) =>
-          r.floor === floor &&
-          (r.direction === direction ||
-            floor === 0 ||
-            floor === config.floors - 1),
-      ) ||
-      passengers.some((p) => p.destinationFloor === floor)
-    );
+    this.elevatorModel.addStopRequest(request);
   }
 }

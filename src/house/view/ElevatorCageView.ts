@@ -1,6 +1,7 @@
 import { Container, Graphics } from "pixi.js";
 import * as TWEEN from "@tweenjs/tween.js";
 import { ElevatorModel } from "../model/ElevatorModel";
+import { IPersonModel } from "../model/IPersonModel";
 import { PersonView } from "./PersonView";
 import config from "../../config.json";
 
@@ -37,6 +38,16 @@ export class ElevatorCageView extends Container {
   public removePassenger(passenger: PersonView) {
     this.removeChild(passenger);
     this.layoutPassengers();
+  }
+
+  public unloadPassengers(passengers: IPersonModel[]) {
+    const idsToRemove = new Set(passengers.map((p) => p.id));
+    const viewsToRemove = this.children.filter(
+      (c): c is PersonView =>
+        c instanceof PersonView && idsToRemove.has(c.person.id),
+    );
+
+    viewsToRemove.forEach((view) => this.removePassenger(view));
   }
 
   public getYForFloor(
